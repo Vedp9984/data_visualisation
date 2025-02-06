@@ -23,25 +23,6 @@
             padding: 2rem;
         }
 
-        .back-button {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            padding: 0.8rem 1.5rem;
-            background: #1e3c72;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-
-        .back-button:hover {
-            background: #2a4c8d;
-            transform: translateY(-2px);
-        }
-
         .page-header {
             text-align: center;
             margin: 3rem 0;
@@ -60,12 +41,6 @@
             padding: 2rem;
             margin-bottom: 2rem;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .info-card h3 {
-            color: #1e3c72;
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
         }
 
         #visualization {
@@ -104,39 +79,17 @@
             pointer-events: none;
             font-size: 14px;
         }
-
-        .axis-label {
-            font-size: 14px;
-            fill: #666;
+        .grid line {
+            stroke: #e0e0e0;
+            stroke-opacity: 0.7;
+            shape-rendering: crispEdges;
         }
-
-        footer {
-            text-align: center;
-            padding: 2rem;
-            background: #1e3c72;
-            color: white;
-            margin-top: 3rem;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-
-            h2 {
-                font-size: 2rem;
-            }
-
-            .back-button {
-                position: static;
-                display: inline-block;
-                margin: 1rem;
-            }
+        .grid path {
+            stroke-width: 0;
         }
     </style>
 </head>
 <body>
-    <a href="../index.html" class="back-button">Back to Home</a>
     <div class="container">
         <div class="page-header">
             <h2>Breed Size vs Lifespan Distribution</h2>
@@ -144,30 +97,16 @@
 
         <div class="info-card">
             <h3>About Box Plots</h3>
-            <p>A box plot shows the distribution of lifespans for each breed size group. Here's what each part means:</p>
+            <p>A box plot shows the distribution of lifespans for each breed size group:</p>
             <ul style="margin-left: 20px; margin-top: 10px;">
-                <li>The box shows where 50% of the lifespans fall</li>
-                <li>The line in the middle of the box is the median lifespan</li>
-                <li>The whiskers show the full range of lifespans</li>
-                <li>The width of each box indicates the relative sample size</li>
+                <li>Box: Shows where 50% of the lifespans fall</li>
+                <li>Middle line: Median lifespan</li>
+                <li>Whiskers: Full range of lifespans</li>
             </ul>
         </div>
 
         <div id="visualization"></div>
-
-        <div class="info-card">
-            <h3>Key Observations</h3>
-            <ul style="margin-left: 20px;">
-                <li>Hover over the boxes to see detailed statistics</li>
-                <li>Compare median lifespans across different size groups</li>
-                <li>Notice the range of lifespans within each size category</li>
-            </ul>
-        </div>
     </div>
-
-    <footer>
-        <p>&copy; 2024 Crufts Data Visualizations. All rights reserved.</p>
-    </footer>
 
     <script>
         // Set up dimensions
@@ -190,14 +129,40 @@
 
         // Load and process data
         d3.csv("data3.csv").then(function(data) {
-            // Convert numeric values
+            // Convert lifespan to numbers
             data.forEach(d => {
-                d.lifespan = +d.lifespan;
-                d.count = +d.count;
+                d.Lifespan = +d.Lifespan;
             });
+            
 
             // Get unique size categories
-            const sizes = Array.from(new Set(data.map(d => d.size)));
+            const sizes = Array.from(new Set(data.map(d => d.Size)));
+
+            function make_x_gridlines() {
+                return d3.axisBottom(x);
+            }
+            function make_y_gridlines() {
+                return d3.axisLeft(y).ticks(10);
+            }
+
+            
+            // Calculate statistics for each size group
+            const boxPlotData = sizes.map(size => {
+                const values = data
+                    .filter(d => d.Size === size)
+                    .map(d => d.Lifespan)
+                    .sort(d3.ascending);
+                
+                return {
+                    size: size,
+                    q1: d3.quantile(values, 0.25),
+                    median: d3.quantile(values, 0.5),
+                    q3: d3.quantile(values, 0.75),
+                    min: d3.min(values),
+                    max: d3.max(values),
+                    count: values.length
+                };
+            });
 
             // Create scales
             const x = d3.scaleBand()
@@ -207,10 +172,7 @@
 
             const y = d3.scaleLinear()
                 .range([height, 0])
-                .domain([
-                    d3.min(data, d => d.lifespan) - 0.5,
-                    d3.max(data, d => d.lifespan) + 0.5
-                ]);
+                .domain([0, d3.max(data, d => d.Lifespan) + 1]);
 
             // Add X axis
             svg.append("g")
@@ -220,7 +182,7 @@
                 .attr("x", width/2)
                 .attr("y", 40)
                 .attr("fill", "black")
-                .attr("text-anchor", "middle")
+                .style("text-anchor", "middle")
                 .text("Breed Size");
 
             // Add Y axis
@@ -231,24 +193,26 @@
                 .attr("y", -40)
                 .attr("x", -height/2)
                 .attr("fill", "black")
-                .attr("text-anchor", "middle")
+                .style("text-anchor", "middle")
                 .text("Lifespan (years)");
 
-            // Calculate statistics for each size group
-            const boxPlotData = sizes.map(size => {
-                const values = data.filter(d => d.size === size).map(d => d.lifespan);
-                const sorted = values.sort(d3.ascending);
-                return {
-                    size: size,
-                    q1: d3.quantile(sorted, 0.25),
-                    median: d3.quantile(sorted, 0.5),
-                    q3: d3.quantile(sorted, 0.75),
-                    iqr: d3.quantile(sorted, 0.75) - d3.quantile(sorted, 0.25),
-                    min: d3.min(sorted),
-                    max: d3.max(sorted)
-                };
-            });
+                svg.append("g")
+                .attr("class", "grid")
+                .attr("transform", "translate(0," + height + ")")
+                .call(make_x_gridlines()
+                    .tickSize(-height)
+                    .tickFormat("")
+                );
+    
+            // Add Y gridlines
+            svg.append("g")
+                .attr("class", "grid")
+                .call(make_y_gridlines()
+                    .tickSize(-width)
+                    .tickFormat("")
+                );
 
+                
             // Draw box plots
             const boxWidth = x.bandwidth();
 
@@ -265,11 +229,12 @@
                             .duration(200)
                             .style("opacity", .9);
                         tooltip.html(
-                            `Breed Size: ${d.size}<br/>` +
+                            `Size: ${d.size}<br/>` +
                             `Median: ${d.median.toFixed(1)} years<br/>` +
                             `Q1: ${d.q1.toFixed(1)} years<br/>` +
                             `Q3: ${d.q3.toFixed(1)} years<br/>` +
-                            `Range: ${d.min.toFixed(1)} - ${d.max.toFixed(1)} years`
+                            `Range: ${d.min.toFixed(1)} - ${d.max.toFixed(1)} years<br/>` +
+                            `Sample size: ${d.count}`
                         )
                             .style("left", (event.pageX + 5) + "px")
                             .style("top", (event.pageY - 28) + "px");
@@ -282,7 +247,7 @@
 
                 // Draw median line
                 svg.append("line")
-                    .attr("class", "center-line")
+                    .attr("class", "median-line")
                     .attr("x1", x(d.size))
                     .attr("x2", x(d.size) + boxWidth)
                     .attr("y1", y(d.median))
@@ -303,7 +268,7 @@
                     .attr("y1", y(d.q3))
                     .attr("y2", y(d.max));
 
-                // Draw whisker ticks
+                // Draw whisker caps
                 svg.append("line")
                     .attr("class", "whisker")
                     .attr("x1", x(d.size) + boxWidth*0.25)
