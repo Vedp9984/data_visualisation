@@ -170,148 +170,154 @@
     </footer>
 
     <script>
-        // Create tooltip div if it doesn't exist
+        // Set up dimensions
+        const margin = {top: 40, right: 40, bottom: 60, left: 60};
+        const width = 800 - margin.left - margin.right;
+        const height = 500 - margin.top - margin.bottom;
+
+        // Create SVG
+        const svg = d3.select("#visualization")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+        // Create tooltip
         const tooltip = d3.select("body").append("div")
             .attr("class", "tooltip")
             .style("opacity", 0);
 
         // Load and process data
         d3.csv("data3.csv").then(function(data) {
-            // Convert string values to numbers
+            // Convert numeric values
             data.forEach(d => {
-                d.count = +d.count;
                 d.lifespan = +d.lifespan;
+                d.count = +d.count;
             });
 
-            const sizeGroups = Array.from(new Set(data.map(d => d.size)));
-            
-            // Calculate statistics for box plots
-            const processedData = sizeGroups.map(size => {
-                const sizeData = data.filter(d => d.size === size);
-                const lifespans = sizeData.map(d => d.lifespan);
-                const totalCount = d3.sum(sizeData, d => d.count);
-                
-                return {
-                    size: size,
-                    totalCount: totalCount,
-                    median: d3.median(lifespans),
-                    q1: d3.quantile(lifespans, 0.25),
-                    q3: d3.quantile(lifespans, 0.75),
-                    min: d3.min(lifespans),
-                    max: d3.max(lifespans)
-                };
-            });
-
-            // Set up dimensions
-            const margin = {top: 40, right: 60, bottom: 60, left: 60};
-            const width = 960 - margin.left - margin.right;
-            const height = 500 - margin.top - margin.bottom;
-
-            // Create SVG
-            const svg = d3.select("#visualization")
-                .append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", `translate(${margin.left},${margin.top})`);
+            // Get unique size categories
+            const sizes = Array.from(new Set(data.map(d => d.size)));
 
             // Create scales
             const x = d3.scaleBand()
                 .range([0, width])
-                .domain(sizeGroups)
-                .padding(0.4);
+                .domain(sizes)
+                .padding(0.2);
 
             const y = d3.scaleLinear()
                 .range([height, 0])
-                .domain([8, 13]);
+                .domain([
+                    d3.min(data, d => d.lifespan) - 0.5,
+                    d3.max(data, d => d.lifespan) + 0.5
+                ]);
 
-            // Add axes
+            // Add X axis
             svg.append("g")
                 .attr("transform", `translate(0,${height})`)
                 .call(d3.axisBottom(x))
-                .selectAll("text")
-                .attr("transform", "rotate(-45)")
-                .style("text-anchor", "end");
-
-            svg.append("g")
-                .call(d3.axisLeft(y));
-
-            // Add axis labels
-            svg.append("text")
-                .attr("class", "axis-label")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 0 - margin.left)
-                .attr("x", 0 - (height / 2))
-                .attr("dy", "1em")
-                .style("text-anchor", "middle")
-                .text("Lifespan (years)");
-
-            svg.append("text")
-                .attr("class", "axis-label")
-                .attr("transform", `translate(${width/2}, ${height + margin.bottom - 10})`)
-                .style("text-anchor", "middle")
+                .append("text")
+                .attr("x", width/2)
+                .attr("y", 40)
+                .attr("fill", "black")
+                .attr("text-anchor", "middle")
                 .text("Breed Size");
 
-            // Create box plots
+            // Add Y axis
+            svg.append("g")
+                .call(d3.axisLeft(y))
+                .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", -40)
+                .attr("x", -height/2)
+                .attr("fill", "black")
+                .attr("text-anchor", "middle")
+                .text("Lifespan (years)");
+
+            // Calculate statistics for each size group
+            const boxPlotData = sizes.map(size => {
+                const values = data.filter(d => d.size === size).map(d => d.lifespan);
+                const sorted = values.sort(d3.ascending);
+                return {
+                    size: size,
+                    q1: d3.quantile(sorted, 0.25),
+                    median: d3.quantile(sorted, 0.5),
+                    q3: d3.quantile(sorted, 0.75),
+                    iqr: d3.quantile(sorted, 0.75) - d3.quantile(sorted, 0.25),
+                    min: d3.min(sorted),
+                    max: d3.max(sorted)
+                };
+            });
+
+            // Draw box plots
             const boxWidth = x.bandwidth();
 
-            const boxGroups = svg.selectAll(".box-group")
-                .data(processedData)
-                .enter()
-                .append("g")
-                .attr("class", "box-group")
-                .attr("transform", d => `translate(${x(d.size)},0)`);
+            boxPlotData.forEach(d => {
+                // Draw box
+                svg.append("rect")
+                    .attr("class", "box")
+                    .attr("x", x(d.size))
+                    .attr("y", y(d.q3))
+                    .attr("width", boxWidth)
+                    .attr("height", y(d.q1) - y(d.q3))
+                    .on("mouseover", function(event) {
+                        tooltip.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                        tooltip.html(
+                            `Breed Size: ${d.size}<br/>` +
+                            `Median: ${d.median.toFixed(1)} years<br/>` +
+                            `Q1: ${d.q1.toFixed(1)} years<br/>` +
+                            `Q3: ${d.q3.toFixed(1)} years<br/>` +
+                            `Range: ${d.min.toFixed(1)} - ${d.max.toFixed(1)} years`
+                        )
+                            .style("left", (event.pageX + 5) + "px")
+                            .style("top", (event.pageY - 28) + "px");
+                    })
+                    .on("mouseout", function() {
+                        tooltip.transition()
+                            .duration(500)
+                            .style("opacity", 0);
+                    });
 
-            // Add boxes
-            boxGroups.append("rect")
-                .attr("class", "box")
-                .attr("x", 0)
-                .attr("width", boxWidth)
-                .attr("y", d => y(d.q3))
-                .attr("height", d => y(d.q1) - y(d.q3))
-                .on("mouseover", function(event, d) {
-                    d3.select(this).style("opacity", 1);
-                    tooltip.transition()
-                        .duration(200)
-                        .style("opacity", .9);
-                    tooltip.html(
-                        `Size: ${d.size}<br>` +
-                        `Median: ${d.median.toFixed(1)} years<br>` +
-                        `Range: ${d.min.toFixed(1)} - ${d.max.toFixed(1)} years<br>` +
-                        `Sample size: ${d.totalCount}`
-                    )
-                    .style("left", (event.pageX + 10) + "px")
-                    .style("top", (event.pageY - 28) + "px");
-                })
-                .on("mouseout", function() {
-                    d3.select(this).style("opacity", 0.8);
-                    tooltip.transition()
-                        .duration(500)
-                        .style("opacity", 0);
-                });
+                // Draw median line
+                svg.append("line")
+                    .attr("class", "center-line")
+                    .attr("x1", x(d.size))
+                    .attr("x2", x(d.size) + boxWidth)
+                    .attr("y1", y(d.median))
+                    .attr("y2", y(d.median));
 
-            // Add median lines
-            boxGroups.append("line")
-                .attr("class", "median-line")
-                .attr("x1", 0)
-                .attr("x2", boxWidth)
-                .attr("y1", d => y(d.median))
-                .attr("y2", d => y(d.median));
+                // Draw whiskers
+                svg.append("line")
+                    .attr("class", "whisker")
+                    .attr("x1", x(d.size) + boxWidth/2)
+                    .attr("x2", x(d.size) + boxWidth/2)
+                    .attr("y1", y(d.min))
+                    .attr("y2", y(d.q1));
 
-            // Add whiskers
-            boxGroups.append("line")
-                .attr("class", "whisker")
-                .attr("x1", boxWidth/2)
-                .attr("x2", boxWidth/2)
-                .attr("y1", d => y(d.min))
-                .attr("y2", d => y(d.q1));
+                svg.append("line")
+                    .attr("class", "whisker")
+                    .attr("x1", x(d.size) + boxWidth/2)
+                    .attr("x2", x(d.size) + boxWidth/2)
+                    .attr("y1", y(d.q3))
+                    .attr("y2", y(d.max));
 
-            boxGroups.append("line")
-                .attr("class", "whisker")
-                .attr("x1", boxWidth/2)
-                .attr("x2", boxWidth/2)
-                .attr("y1", d => y(d.q3))
-                .attr("y2", d => y(d.max));
+                // Draw whisker ticks
+                svg.append("line")
+                    .attr("class", "whisker")
+                    .attr("x1", x(d.size) + boxWidth*0.25)
+                    .attr("x2", x(d.size) + boxWidth*0.75)
+                    .attr("y1", y(d.min))
+                    .attr("y2", y(d.min));
+
+                svg.append("line")
+                    .attr("class", "whisker")
+                    .attr("x1", x(d.size) + boxWidth*0.25)
+                    .attr("x2", x(d.size) + boxWidth*0.75)
+                    .attr("y1", y(d.max))
+                    .attr("y2", y(d.max));
+            });
         });
     </script>
 </body>

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Competition Analysis</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
@@ -180,10 +182,9 @@
                     });
             }
 
-            // Initialize chart
+       
             updateChart("");
 
-            // Add search functionality
             d3.select("#searchInput").on("input", function() {
                 updateChart(this.value);
             });

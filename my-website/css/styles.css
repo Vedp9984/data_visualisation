@@ -1,55 +1,136 @@
-/* Reset some default styles */
-body, h1, h2, h3, p {
+* {
     margin: 0;
     padding: 0;
-}
-
-/* Set a background color and font for the body */
-body {
-    background-color: #f4f4f4;
+    box-sizing: border-box;
     font-family: Arial, sans-serif;
 }
 
-/* Style for the main heading */
-h1 {
-    color: #333;
+body {
+    background: linear-gradient(to bottom, #f0f4f8, #ffffff);
+    min-height: 100vh;
+}
+
+header {
+    background-color: #1e3c72;
+    color: white;
+    padding: 2rem 0;
     text-align: center;
-    margin: 20px 0;
 }
 
-/* Style for links */
-a {
-    color: #007bff;
-    text-decoration: none;
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
 }
 
-a:hover {
-    text-decoration: underline;
+nav {
+    background-color: #2a4c8d;
+    padding: 1rem 0;
 }
 
-/* Container for the visualizations */
-.visualization-container {
+nav ul {
+    list-style: none;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 20px;
+    justify-content: center;
+    gap: 2rem;
 }
 
-/* Style for individual visualization pages */
-.visualization {
-    background-color: #fff;
-    border: 1px solid #ddd;
+nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 1.1rem;
+    padding: 0.5rem 1rem;
     border-radius: 5px;
-    padding: 20px;
-    margin: 10px 0;
-    width: 80%;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
 }
 
-/* Footer styles */
-footer {
+nav a:hover {
+    background-color: #3a5ca0;
+}
+
+main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.intro-section {
     text-align: center;
-    margin: 20px 0;
-    font-size: 0.9em;
+    margin-bottom: 3rem;
+}
+
+.intro-section h2 {
+    color: #1e3c72;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.intro-section p {
+    color: #555;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.viz-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.viz-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    transition: transform 0.3s;
+}
+
+.viz-card:hover {
+    transform: translateY(-5px);
+}
+
+.viz-card h3 {
+    color: #1e3c72;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.viz-card p {
     color: #666;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.viz-card a {
+    display: inline-block;
+    background-color: #1e3c72;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.viz-card a:hover {
+    background-color: #2a4c8d;
+}
+
+footer {
+    background-color: #1e3c72;
+    color: white;
+    text-align: center;
+    padding: 1.5rem 0;
+    margin-top: 3rem;
+}
+
+@media (max-width: 768px) {
+    nav ul {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .viz-grid {
+        grid-template-columns: 1fr;
+    }
 }
