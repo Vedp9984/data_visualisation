@@ -5,46 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crufts Data Visualizations</title>
     <link rel="stylesheet" href="css/styles.css">
+    <script defer src="js/main.js"></script>
 </head>
 <body>
     <header>
-        <h1>Crufts Data Visualizations</h1>
+        <h1>Crufts Data Insights</h1>
         <nav>
             <ul>
                 <li><a href="pages/visualization1.html">Breed Distribution</a></li>
-                <li><a href="pages/visualization2.html">Breed-based Garden Size
+                <li><a href="pages/visualization2.html">Garden Size by Breed</a></li>
                 <li><a href="pages/visualization3.html">Lifespan Trends</a></li>
             </ul>
         </nav>
     </header>
 
-    <main>
+    <section class="hero">
+        <h2>Unveiling Patterns in Dog Breeds & Competitions</h2>
+        <p>Explore interactive visualizations of the world's largest dog show.</p>
+    </section>
+
+    <main id="visualizations">
         <section class="intro-section">
-            <h2>Exploring Crufts Dog Show Data</h2>
-            <p>Welcome to our interactive data visualization platform. Discover fascinating insights about dog breeds, competitions, and trends from the world's largest dog show.</p>
+            <h2>Discover Canine Data Like Never Before</h2>
+            <p>Gain insights into breed popularity, competition trends, and more through our interactive visualizations.</p>
         </section>
 
         <div class="viz-grid">
             <div class="viz-card">
-                <h3>Breed Distribution</h3>
-                <p>Explore the distribution of different breed groups at Crufts, including Gundogs, Hounds, Terriers, and more. Discover which groups are most represented.</p>
+                <span class="icon">🐶</span>
+                <h3>Most Competitive Breed Classes</h3>
+                <p>Find out which event classes attract the most participation for each breed with our dynamic search and bar chart visualization.</p>
                 <a href="pages/visualization1.html">View Analysis</a>
             </div>
 
             <div class="viz-card">
-                <h3>Size Analysis</h3>
-                <p>Analyze the proportion of small, medium, and large dogs across different breed groups. Understand size distribution patterns in competitive dog shows.</p>
+                <span class="icon">🏡</span>
+                <h3>Garden Size Requirement by Breed</h3>
+                <p>Compare different breed groups based on their ideal living space. Discover which breeds thrive in small or large gardens.</p>
                 <a href="pages/visualization2.html">View Analysis</a>
             </div>
 
             <div class="viz-card">
-                <h3>Historical Trends</h3>
-                <p>Discover trends and patterns in Best in Show winners throughout Crufts' history. See how breed preferences have evolved over time.</p>
+                <span class="icon">📊</span>
+                <h3>Breed Size vs. Lifespan</h3>
+                <p>Explore how a dog's size correlates with its lifespan. Does a larger breed mean a shorter life? Find out with this interactive box plot.</p>
                 <a href="pages/visualization3.html">View Analysis</a>
             </div>
         </div>
     </main>
-    <br><br><br>    <br><br><br>    <br><br><br>    <br><br><br>    <br><br><br><br>
+
     <footer>
         <p>&copy; 2024 Crufts Data Visualizations. All rights reserved.</p>
     </footer>
