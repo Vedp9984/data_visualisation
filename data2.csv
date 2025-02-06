@@ -1,0 +1,22 @@
+Breed Group,Garden Size,Count
+Gundog,Small-Medium,7
+Gundog,Large,31
+Gundog,None,0
+Hound,Small-Medium,15
+Hound,Large,24
+Hound,None,0
+Pastoral,Small-Medium,16
+Pastoral,Large,23
+Pastoral,None,0
+Utility,Small-Medium,26
+Utility,Large,4
+Utility,None,0
+Terrier,Small-Medium,26
+Terrier,Large,1
+Terrier,None,0
+Working,Small-Medium,2
+Working,Large,24
+Working,None,0
+Toy,Small-Medium,23
+Toy,Large,0
+Toy,None,1
