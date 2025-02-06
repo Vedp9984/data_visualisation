@@ -1,0 +1,13 @@
+size,lifespan,count
+Small, 12+ years,52
+Small,10+ years,21
+Large,10+ years,54
+Large,12+ years,9
+Large,10- years,16
+Medium,10+ years,32
+Medium,12+ years,14
+Medium,10- years,6
+Medium-Large,10+ years,8
+Small-Medium,10+ years,4
+Small-Medium,12+ years,4
+Extra Large,10- years,3
