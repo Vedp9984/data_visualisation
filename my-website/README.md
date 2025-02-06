@@ -35,6 +35,3 @@ my-website
 2. Open `index.html` in a web browser to view the homepage.
 3. Navigate to the visualization pages using the links provided on the homepage.
 
-## License
-
-This project is open-source and available under the MIT License.
