@@ -7,24 +7,32 @@
         body {
             font-family: 'Arial', sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 40px;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
-            padding: 2rem;
+            padding: 3rem;
             border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             text-align: center;
             color: #2c3e50;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
+            font-size: 2.2em;
+        }
+
+        .description {
+            text-align: center;
+            color: #34495e;
+            margin-bottom: 3rem;
+            font-size: 1.2em;
         }
 
         .heatmap-container {
@@ -32,36 +40,27 @@
             justify-content: center;
             align-items: center;
             flex-direction: column;
+            margin-bottom: 2rem;
         }
 
         .cell-hover {
             position: absolute;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             color: white;
-            padding: 8px;
-            border-radius: 4px;
+            padding: 12px;
+            border-radius: 6px;
             font-size: 14px;
             pointer-events: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 10px 20px;
-            background: #2c3e50;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background 0.3s;
+        .legend-title {
+            font-size: 14px;
+            font-weight: 600;
         }
 
-        .back-button:hover {
-            background: #34495e;
-        }
-
-        .legend {
-            margin-top: 20px;
+        .legend-text {
+            font-size: 12px;
         }
 
         footer {
@@ -69,26 +68,25 @@
             color: white;
             text-align: center;
             padding: 1.5rem 0;
-            margin-top: 3rem;
+            margin-top: 4rem;
+            border-radius: 0 0 15px 15px;
         }
-
     </style>
 </head>
 <body>
     <a href="../index.html" class="back-button">Back to Home</a>
     <div class="container">
         <h1>Garden Size Requirements by Breed Group</h1>
+        <p class="description">Color intensity indicates the number of breeds in each category - darker blues represent higher counts</p>
         <div class="heatmap-container" id="heatmap"></div>
     </div>
 
     <script>
-        // Load and process the data
         d3.csv("data2.csv").then(function(data) {
-            const margin = {top: 50, right: 80, bottom: 50, left: 100};
-            const width = 900 - margin.left - margin.right;
-            const height = 700 - margin.top - margin.bottom;
+            const margin = {top: 50, right: 100, bottom: 200, left: 120}; // Increased bottom margin
+            const width = 1300 - margin.left - margin.right;
+            const height = 800 - margin.top - margin.bottom;
 
-            // Create SVG
             const svg = d3.select("#heatmap")
                 .append("svg")
                 .attr("width", width + margin.left + margin.right)
@@ -96,11 +94,9 @@
                 .append("g")
                 .attr("transform", `translate(${margin.left},${margin.top})`);
 
-            // Get unique values
             const breedGroups = [...new Set(data.map(d => d["Breed Group"]))];
             const gardenSizes = [...new Set(data.map(d => d["Garden Size"]))];
 
-            // Create scales
             const x = d3.scaleBand()
                 .range([0, width])
                 .domain(breedGroups)
@@ -111,18 +107,15 @@
                 .domain(gardenSizes)
                 .padding(0.05);
 
-            // Create color scale
             const colorScale = d3.scaleSequential()
                 .interpolator(d3.interpolateBlues)
                 .domain([0, d3.max(data, d => +d.Count)]);
 
-            // Create tooltip
             const tooltip = d3.select("body")
                 .append("div")
                 .attr("class", "cell-hover")
                 .style("opacity", 0);
 
-            // Add rectangles
             svg.selectAll("rect")
                 .data(data)
                 .enter()
@@ -137,11 +130,11 @@
                 .duration(1000)
                 .style("opacity", 1);
 
-            // Add text in cells
-            svg.selectAll("text")
+            svg.selectAll(".cell-text")
                 .data(data)
                 .enter()
                 .append("text")
+                .attr("class", "cell-text")
                 .attr("x", d => x(d["Breed Group"]) + x.bandwidth()/2)
                 .attr("y", d => y(d["Garden Size"]) + y.bandwidth()/2)
                 .attr("text-anchor", "middle")
@@ -149,7 +142,6 @@
                 .style("fill", d => +d.Count > 15 ? "white" : "black")
                 .text(d => d.Count);
 
-            // Add axes
             svg.append("g")
                 .attr("transform", `translate(0,${height})`)
                 .call(d3.axisBottom(x))
@@ -162,36 +154,51 @@
             svg.append("g")
                 .call(d3.axisLeft(y));
 
-            // Add legend
-            const legendWidth = 200;
-            const legendHeight = 20;
+            // New brick legend
+            const legendBrickWidth = 100; // Increased width
+            const legendBrickHeight = 35;
+            const numBricks = 5;
+            const legendSpacing = 30; // Increased spacing
+            const maxCount = d3.max(data, d => +d.Count);
 
             const legend = svg.append("g")
                 .attr("class", "legend")
-                .attr("transform", `translate(${width + 20},0)`);
+                .attr("transform", `translate(${(width - (legendBrickWidth * numBricks + legendSpacing * (numBricks-1)))/2}, ${height + 120})`); // Increased y-offset
 
-            const legendScale = d3.scaleLinear()
-                .domain([0, d3.max(data, d => +d.Count)])
-                .range([0, legendHeight]);
+            // Calculate ranges for bricks
+            const brickRanges = d3.range(numBricks).map(i => {
+                const start = Math.round(maxCount * (i/numBricks));
+                const end = Math.round(maxCount * ((i+1)/numBricks));
+                return [start, end];
+            });
 
-            const legendAxis = d3.axisRight(legendScale)
-                .ticks(5);
+            legend.append("text")
+                .attr("class", "legend-title")
+                .attr("x", (legendBrickWidth * numBricks + legendSpacing * (numBricks-1))/2)
+                .attr("y", -20)
+                .attr("text-anchor", "middle")
+                .text("Number of Breeds");
 
-            legend.selectAll("rect")
-                .data(d3.range(legendWidth))
+            const bricks = legend.selectAll(".legend-brick")
+                .data(brickRanges)
                 .enter()
-                .append("rect")
-                .attr("x", (d, i) => i)
-                .attr("y", 0)
-                .attr("width", 1)
-                .attr("height", legendHeight)
-                .style("fill", d => colorScale(d * d3.max(data, d => +d.Count) / legendWidth));
+                .append("g")
+                .attr("class", "legend-brick")
+                .attr("transform", (d, i) => `translate(${i * (legendBrickWidth + legendSpacing)}, 0)`);
 
-            legend.append("g")
-                .attr("transform", `translate(${legendWidth},0)`)
-                .call(legendAxis);
+            bricks.append("rect")
+                .attr("width", legendBrickWidth)
+                .attr("height", legendBrickHeight)
+                .attr("rx", 4)
+                .style("fill", d => colorScale(d[1]));
 
-            // Interactive effects
+            bricks.append("text")
+                .attr("class", "legend-text")
+                .attr("x", legendBrickWidth/2)
+                .attr("y", legendBrickHeight + 20)
+                .attr("text-anchor", "middle")
+                .text(d => `${d[0]}-${d[1]}`);
+
             svg.selectAll("rect")
                 .on("mouseover", function(event, d) {
                     d3.select(this)
@@ -219,8 +226,7 @@
                 });
         });
     </script>
-    <br><br><br>
-      <footer>
+    <footer>
         <p>&copy; 2024 Crufts Data Visualizations. All rights reserved.</p>
     </footer>
 </body>
