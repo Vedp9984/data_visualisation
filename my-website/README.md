@@ -1,4 +1,3 @@
-# my-website README.md
 
 # My Website
 
@@ -32,6 +31,6 @@ my-website
 ## Setup Instructions
 
 1. Clone the repository or download the project files.
-2. Open `index.html` in a web browser to view the homepage.
+2. Open `index.html` in a web browser to view the homepage using the liveserver.
 3. Navigate to the visualization pages using the links provided on the homepage.
 
