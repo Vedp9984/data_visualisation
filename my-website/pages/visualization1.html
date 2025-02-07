@@ -261,8 +261,8 @@
     <script>
         let allBreeds = [];
         const DEFAULT_BREED = "Brittany";
-        
-        d3.csv("data1.csv").then(data => {
+      
+        d3.csv("dataset/data1.csv").then(data => {
             allBreeds = [...new Set(data.map(d => d.Breed))].sort();
             
             const margin = {top: 40, right: 20, bottom: 200, left: 80};

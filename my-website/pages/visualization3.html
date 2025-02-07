@@ -222,7 +222,7 @@
             .style("opacity", 0);
 
         // Load and process data
-        d3.csv("data3.csv").then(function(data) {
+        d3.csv("dataset/data3.csv").then(data => {
             // Convert lifespan to numbers
             data.forEach(d => {
                 d.Lifespan = +d.Lifespan;

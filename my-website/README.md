@@ -6,16 +6,17 @@ This project is a simple website consisting of a homepage and several visualizat
 ## Project Structure
 
 ```
-─ my-website
+ my-website
     ├── css
     │   └── styles.css
     ├── index.html
     ├── js
     │   └── main.js
     ├── pages
-    │   ├── data1.csv
-    │   ├── data2.csv
-    │   ├── data3.csv
+    │   ├── dataset
+    │   │   ├── data1.csv
+    │   │   ├── data2.csv
+    │   │   └── data3.csv
     │   ├── visualization1.html
     │   ├── visualization2.html
     │   └── visualization3.html

@@ -102,7 +102,7 @@
     </div> 
 
     <script>
-        d3.csv("data2.csv").then(function(data) {
+           d3.csv("dataset/data2.csv").then(data => {
             const margin = {top: 50, right: 100, bottom: 200, left: 120}; // Increased bottom margin
             const width = 800 - margin.left - margin.right; // Reduced width
             const height = 600 - margin.top - margin.bottom; // Reduced height
