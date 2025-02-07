@@ -110,6 +110,47 @@
             margin-top: 4rem;
             border-radius: 0 0 15px 15px;
         }
+        /* Add this to your existing styles */
+        .detailed-explanation {
+            margin: 2rem 0;
+            padding: 1.5rem;
+        }
+
+        .component-explanation {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .component-explanation:last-child {
+            margin-bottom: 0;
+        }
+
+        .component-explanation h4 {
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .component-explanation p {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .component-explanation ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .component-explanation li {
+            margin-bottom: 0.3rem;
+            color: #444;
+        }
+
+        .component-explanation strong {
+            color: #1e3c72;
+        }
     </style>
 </head>
 <body>
@@ -120,17 +161,40 @@
             <h2>Breed Size vs Lifespan Distribution</h2>
         </div>
 
-        <div class="info-card">
-            <h3>About Box Plots</h3>
-            <p>A box plot shows the distribution of lifespans for each breed size group:</p>
-            <ul style="margin-left: 20px; margin-top: 10px;">
-                <li>Box: Shows where 50% of the lifespans fall</li>
-                <li>Middle line: Median lifespan</li>
-                <li>Whiskers: Full range of lifespans</li>
-            </ul>
+        <div id="visualization"></div>
+
+        <!-- Add this after your existing info-card div -->
+        <div class="info-card detailed-explanation">
+            <h3>Understanding the Box Plot Components</h3>
+            
+            <div class="component-explanation">
+                <h4>The Box</h4>
+                <p>Shows where the middle 50% of the lifespans fall (Interquartile Range - IQR)</p>
+                <ul>
+                    <li><strong>Q1 (Lower Box Edge):</strong> 25% of lifespans fall below this value</li>
+                    <li><strong>Q3 (Upper Box Edge):</strong> 75% of lifespans fall below this value</li>
+                </ul>
+            </div>
+
+            <div class="component-explanation">
+                <h4>The White Line (Median)</h4>
+                <p>Represents the middle value where:</p>
+                <ul>
+                    <li>50% of lifespans are above this line</li>
+                    <li>50% of lifespans are below this line</li>
+                </ul>
+            </div>
+
+            <div class="component-explanation">
+                <h4>The Whiskers</h4>
+                <p>Extended lines showing the full spread of the data:</p>
+                <ul>
+                    <li><strong>Upper Whisker:</strong> Extends to the highest lifespan within 1.5 × IQR</li>
+                    <li><strong>Lower Whisker:</strong> Extends to the lowest lifespan within 1.5 × IQR</li>
+                </ul>
+            </div>
         </div>
 
-        <div id="visualization"></div>
     </div>
 
     <footer>
