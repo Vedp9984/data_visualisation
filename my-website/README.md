@@ -6,22 +6,25 @@ This project is a simple website consisting of a homepage and several visualizat
 ## Project Structure
 
 ```
-my-website
-├── index.html
-├── pages
-│   ├── visualization1.html
-│   ├── visualization2.html
-│   └── visualization3.html
-├── css
-│   └── styles.css
-├── js
-│   └── main.js
-└── README.md
+─ my-website
+    ├── css
+    │   └── styles.css
+    ├── index.html
+    ├── js
+    │   └── main.js
+    ├── pages
+    │   ├── data1.csv
+    │   ├── data2.csv
+    │   ├── data3.csv
+    │   ├── visualization1.html
+    │   ├── visualization2.html
+    │   └── visualization3.html
+    └── README.md
 ```
 
 ## Files Description
 
-- **index.html**: The main homepage of the website. It contains links to the visualization pages and any other relevant content.
+- **index.html**: The main homepage of the website. It contains links to the visualization pages and any other relevant content.also this page is responsive will work properly in laptop large desktop and mobile phone of diffrent size.
 - **pages/visualization1.html**: The first visualization page, including content specific to the first visualization.
 - **pages/visualization2.html**: The second visualization page, including content specific to the second visualization.
 - **pages/visualization3.html**: The third visualization page, including content specific to the third visualization.
