@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,60 +8,60 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background: #f0f2f5;
-}
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f0f2f5;
+        }
 
-.container {
-    max-width: 1000px;
-    margin: 0 auto;
-    margin-top:2px;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-.search-wrapper {
-    margin: 20px 0;
-    text-align: center;
-}
+        .search-wrapper {
+            margin: 20px 0;
+            text-align: center;
+        }
 
-#searchInput {
-    width: 300px;
-    padding: 10px 15px;
-    border: 2px solid #ddd;
-    border-radius: 20px;
-    font-size: 16px;
-    outline: none;
-    transition: border-color 0.3s;
-}
+        #searchInput {
+            width: 300px;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
 
-#searchInput:focus {
-    border-color: #2196F3;
-}
+        #searchInput:focus {
+            border-color: #2196F3;
+        }
 
-.bar {
-    fill: #2196F3;
-    transition: fill 0.3s;
-}
+        .bar {
+            fill: #2196F3;
+            transition: fill 0.3s;
+        }
 
-.bar.highlight {
-    fill: #1976D2;
-}
+        .bar.highlight {
+            fill: #1976D2;
+        }
 
-.tooltip {
-    position: absolute;
-    padding: 10px;
-    background: rgba(0,0,0,0.8);
-    color: white;
-    border-radius: 4px;
-    pointer-events: none;
-    font-size: 14px;
-}
-.back-button {
+        .tooltip {
+            position: absolute;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 4px;
+            pointer-events: none;
+            font-size: 14px;
+        }
+
+        .back-button {
             position: absolute;
             top: 20px;
             left: 20px;
@@ -75,18 +76,18 @@
         .back-button:hover {
             background: #34495e;
         }
-        footer {
-    background-color: #1e3c72;
-    color: white;
-    text-align: center;
-    padding: 1.5rem 0;
-    margin-top: 18rem;
-    padding: 10px 0;
-}
 
+        footer {
+            background-color: #1e3c72;
+            color: white;
+            text-align: center;
+            padding: 1.5rem 0;
+            margin-top: rem;
+        }
     </style>
     <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
     <a href="../index.html" class="back-button">Back to Home</a>
     <div class="container">
@@ -97,12 +98,13 @@
         <div id="chartContainer"></div>
     </div>
     <script>
-    
+        // Load and process data
         d3.csv("data1.csv").then(data => {
-            const margin = {top: 40, right: 20, bottom: 90, left: 60};
+            const margin = { top: 40, right: 20, bottom: 180, left: 120 };
             const width = 960 - margin.left - margin.right;
             const height = 500 - margin.top - margin.bottom;
 
+            // Create SVG container
             const svg = d3.select("#chartContainer")
                 .append("svg")
                 .attr("width", width + margin.left + margin.right)
@@ -110,18 +112,27 @@
                 .append("g")
                 .attr("transform", `translate(${margin.left},${margin.top})`);
 
-          
+            // Create tooltip
             const tooltip = d3.select("body").append("div")
                 .attr("class", "tooltip")
                 .style("opacity", 0);
 
             function updateChart(searchTerm) {
-             
-                const filteredData = data.filter(d => 
-                    d.Breed.toLowerCase().includes(searchTerm.toLowerCase())
-                );
+                // Filter data based on search
+                let filteredData;
 
-           
+                if (!searchTerm.trim()) {
+                    // Default to "Kennel Club Obedience Championships" when search is empty
+                    filteredData = data.filter(d => d.Breed === "Retriever (Golden)");
+                } else {
+                    // Filter data based on search
+                    filteredData = data.filter(d =>
+                        d.Breed.toLowerCase().startsWith(searchTerm.toLowerCase())
+                    );
+                }
+                console.log(filteredData)
+
+                // Create scales
                 const x = d3.scaleBand()
                     .range([0, width])
                     .padding(0.1);
@@ -129,13 +140,14 @@
                 const y = d3.scaleLinear()
                     .range([height, 0]);
 
-            
+                // Update domains
                 x.domain(filteredData.map(d => d["Class Name"]));
                 y.domain([0, d3.max(filteredData, d => Number(d.Entries))]);
 
-        
+                // Clear previous chart
                 svg.selectAll("*").remove();
 
+                // Add X axis
                 svg.append("g")
                     .attr("transform", `translate(0,${height})`)
                     .call(d3.axisBottom(x))
@@ -143,9 +155,26 @@
                     .attr("transform", "rotate(-45)")
                     .style("text-anchor", "end");
 
+                // **Add X-axis Label**
+                svg.append("text")
+                    .attr("x", width / 2)
+                    .attr("y", height + 170)
+                    .style("text-anchor", "middle")
+                    .style("font-size", "14px")
+                    .text("Class Names");
+
                 // Add Y axis
                 svg.append("g")
                     .call(d3.axisLeft(y));
+
+                // **Add Y-axis Label**
+                svg.append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("x", -height / 2)
+                    .attr("y", -50)
+                    .style("text-anchor", "middle")
+                    .style("font-size", "14px")
+                    .text("No. of Entries");
 
                 // Add bars with animation
                 svg.selectAll(".bar")
@@ -162,8 +191,9 @@
                     .attr("y", d => y(Number(d.Entries)))
                     .attr("height", d => height - y(Number(d.Entries)));
 
+                // Add hover effects
                 svg.selectAll(".bar")
-                    .on("mouseover", function(event, d) {
+                    .on("mouseover", function (event, d) {
                         d3.select(this).classed("highlight", true);
                         tooltip.transition()
                             .duration(200)
@@ -172,7 +202,7 @@
                             .style("left", (event.pageX + 10) + "px")
                             .style("top", (event.pageY - 28) + "px");
                     })
-                    .on("mouseout", function() {
+                    .on("mouseout", function () {
                         d3.select(this).classed("highlight", false);
                         tooltip.transition()
                             .duration(500)
@@ -180,16 +210,66 @@
                     });
             }
 
-       
+
+
             updateChart("");
 
-            d3.select("#searchInput").on("input", function() {
-                updateChart(this.value);
+            const searchInput = d3.select("#searchInput");
+            const dropdown = d3.select("body").append("div")
+                .attr("class", "dropdown")
+                .style("position", "absolute")
+                .style("background", "white")
+                .style("border", "1px solid #ddd")
+                .style("border-radius", "5px")
+                .style("max-height", "150px")
+                .style("overflow-y", "auto")
+                .style("display", "none")
+                .style("z-index", "10");
+
+            searchInput.on("input", function () {
+                const searchTerm = this.value.toLowerCase();
+                const filteredBreeds = data
+                    .map(d => d.Breed)
+                    .filter((breed, index, self) => self.indexOf(breed) === index) // Get unique breeds
+                    .filter(breed => breed.toLowerCase().startsWith(searchTerm)); // Filter by search term
+
+                dropdown.html(""); // Clear previous options
+
+                if (filteredBreeds.length > 0 && searchTerm) {
+                    dropdown.style("display", "block")
+                        .style("left", `${this.getBoundingClientRect().left}px`)
+                        .style("top", `${this.getBoundingClientRect().bottom + window.scrollY}px`)
+                        .style("width", `${this.offsetWidth}px`);
+
+                    filteredBreeds.forEach(breed => {
+                        dropdown.append("div")
+                            .text(breed)
+                            .style("padding", "8px")
+                            .style("cursor", "pointer")
+                            .on("click", function () {
+                                searchInput.property("value", breed);
+                                dropdown.style("display", "none");
+                                updateChart(breed); // Update chart based on selected breed
+                            });
+                    });
+                } else {
+                    dropdown.style("display", "none");
+                }
             });
+
+            // Hide dropdown if clicked outside
+            d3.select("body").on("click", function (event) {
+                if (!searchInput.node().contains(event.target) && !dropdown.node().contains(event.target)) {
+                    dropdown.style("display", "none");
+                }
+            });
+
         });
     </script>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br>
     <footer>
         <p>&copy; 2024 Crufts Data Visualizations. All rights reserved.</p>
     </footer>
 </body>
+
 </html>
