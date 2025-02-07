@@ -16,7 +16,7 @@
             max-width: 1400px;
             margin: 0 auto;
             background: white;
-            padding: 3rem;
+            padding: 2rem;
             border-radius: 15px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         }
@@ -31,6 +31,7 @@
         .description {
             text-align: center;
             color: #34495e;
+            text-decoration:palevioletred;
             margin-bottom: 3rem;
             font-size: 1.2em;
         }
@@ -92,82 +93,106 @@
     <a href="../index.html" class="back-button">Back to Home</a>
     <div class="container">
         <h1>Garden Size Requirements by Breed Group</h1>
-        <p class="description">Color intensity indicates the number of breeds in each category - darker blues represent higher counts</p>
+        <p class="description">Color intensity indicates the number of breeds in each category you can hover the box to get the information</p>
+
         <div class="heatmap-container" id="heatmap"></div>
-    </div>
+    </div> 
 
     <script>
         d3.csv("data2.csv").then(function(data) {
             const margin = {top: 50, right: 100, bottom: 200, left: 120}; // Increased bottom margin
-            const width = 1300 - margin.left - margin.right;
-            const height = 800 - margin.top - margin.bottom;
+            const width = 1000 - margin.left - margin.right;
+            const height =800 - margin.top - margin.bottom;
 
             const svg = d3.select("#heatmap")
-                .append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", `translate(${margin.left},${margin.top})`);
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
 
             const breedGroups = [...new Set(data.map(d => d["Breed Group"]))];
             const gardenSizes = [...new Set(data.map(d => d["Garden Size"]))];
 
             const x = d3.scaleBand()
-                .range([0, width])
-                .domain(breedGroups)
-                .padding(0.05);
+            .range([0, width])
+            .domain(breedGroups)
+            .padding(0.05);
 
             const y = d3.scaleBand()
-                .range([height, 0])
-                .domain(gardenSizes)
-                .padding(0.05);
+            .range([height, 0])
+            .domain(gardenSizes)
+            .padding(0.05);
 
             const colorScale = d3.scaleSequential()
-                .interpolator(d3.interpolateBlues)
-                .domain([0, d3.max(data, d => +d.Count)]);
+            .interpolator(d3.interpolateBlues)
+            .domain([0, d3.max(data, d => +d.Count)]);
 
             const tooltip = d3.select("body")
-                .append("div")
-                .attr("class", "cell-hover")
-                .style("opacity", 0);
+            .append("div")
+            .attr("class", "cell-hover")
+            .style("opacity", 0);
 
             svg.selectAll("rect")
-                .data(data)
-                .enter()
-                .append("rect")
-                .attr("x", d => x(d["Breed Group"]))
-                .attr("y", d => y(d["Garden Size"]))
-                .attr("width", x.bandwidth())
-                .attr("height", y.bandwidth())
-                .style("fill", d => colorScale(d.Count))
-                .style("opacity", 0)
-                .transition()
-                .duration(1000)
-                .style("opacity", 1);
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("x", d => x(d["Breed Group"]))
+            .attr("y", d => y(d["Garden Size"]))
+            .attr("width", x.bandwidth())
+            .attr("height", y.bandwidth())
+            .style("fill", d => colorScale(d.Count))
+            .style("opacity", 0)
+            .transition()
+            .duration(1000)
+            .style("opacity", 1);
 
             svg.selectAll(".cell-text")
-                .data(data)
-                .enter()
-                .append("text")
-                .attr("class", "cell-text")
-                .attr("x", d => x(d["Breed Group"]) + x.bandwidth()/2)
-                .attr("y", d => y(d["Garden Size"]) + y.bandwidth()/2)
-                .attr("text-anchor", "middle")
-                .attr("dominant-baseline", "middle")
-                .style("fill", d => +d.Count > 15 ? "white" : "black")
-                .text(d => d.Count);
+            .data(data)
+            .enter()
+            .append("text")
+            .attr("class", "cell-text")
+            .attr("x", d => x(d["Breed Group"]) + x.bandwidth()/2)
+            .attr("y", d => y(d["Garden Size"]) + y.bandwidth()/2)
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .style("fill", d => +d.Count > 15 ? "white" : "black")
+            .style("font-weight", "bold")
+            .text(d => d.Count);
 
             svg.append("g")
-                .attr("transform", `translate(0,${height})`)
-                .call(d3.axisBottom(x))
-                .selectAll("text")
-                .style("text-anchor", "end")
-                .attr("dx", "-.8em")
-                .attr("dy", ".15em")
-                .attr("transform", "rotate(-45)");
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", "rotate(-45)")
+            .style("font-weight", "bold");
 
             svg.append("g")
-                .call(d3.axisLeft(y));
+            .call(d3.axisLeft(y))
+            .selectAll("text")
+            .style("font-weight", "bold");
+
+            // X-axis label
+            svg.append("text")
+            .attr("class", "x-axis-label")
+            .attr("x", width / 1)
+            .attr("y", height + margin.bottom - 150)
+            .attr("text-anchor", "middle")
+            .style("font-weight", "bold")
+            .text("Breed Group");
+
+            // Y-axis label
+            svg.append("text")
+            .attr("class", "y-axis-label")
+            .attr("x", -height / 4)
+            .attr("y", -margin.left + 40)
+            .attr("text-anchor", "middle")
+            .attr("transform", "rotate(-90)")
+            .style("font-weight", "bold")
+            .text("Garden Size");
 
             // New brick legend
             const legendBrickWidth = 100; // Increased width
@@ -177,68 +202,70 @@
             const maxCount = d3.max(data, d => +d.Count);
 
             const legend = svg.append("g")
-                .attr("class", "legend")
-                .attr("transform", `translate(${(width - (legendBrickWidth * numBricks + legendSpacing * (numBricks-1)))/2}, ${height + 120})`); // Increased y-offset
+            .attr("class", "legend")
+            .attr("transform", `translate(${(width - (legendBrickWidth * numBricks + legendSpacing * (numBricks-1)))/2}, ${height + 120})`); // Increased y-offset
 
             // Calculate ranges for bricks
             const brickRanges = d3.range(numBricks).map(i => {
-                const start = Math.round(maxCount * (i/numBricks));
-                const end = Math.round(maxCount * ((i+1)/numBricks));
-                return [start, end];
+            const start = Math.round(maxCount * (i/numBricks));
+            const end = Math.round(maxCount * ((i+1)/numBricks));
+            return [start, end];
             });
 
             legend.append("text")
-                .attr("class", "legend-title")
-                .attr("x", (legendBrickWidth * numBricks + legendSpacing * (numBricks-1))/2)
-                .attr("y", -20)
-                .attr("text-anchor", "middle")
-                .text("Number of Breeds");
+            .attr("class", "legend-title")
+            .attr("x", (legendBrickWidth * numBricks + legendSpacing * (numBricks-1))/2)
+            .attr("y", -20)
+            .attr("text-anchor", "middle")
+            .style("font-weight", "bold")
+            .text("Number of Breeds");
 
             const bricks = legend.selectAll(".legend-brick")
-                .data(brickRanges)
-                .enter()
-                .append("g")
-                .attr("class", "legend-brick")
-                .attr("transform", (d, i) => `translate(${i * (legendBrickWidth + legendSpacing)}, 0)`);
+            .data(brickRanges)
+            .enter()
+            .append("g")
+            .attr("class", "legend-brick")
+            .attr("transform", (d, i) => `translate(${i * (legendBrickWidth + legendSpacing)}, 0)`);
 
             bricks.append("rect")
-                .attr("width", legendBrickWidth)
-                .attr("height", legendBrickHeight)
-                .attr("rx", 4)
-                .style("fill", d => colorScale(d[1]));
+            .attr("width", legendBrickWidth)
+            .attr("height", legendBrickHeight)
+            .attr("rx", 4)
+            .style("fill", d => colorScale(d[1]));
 
             bricks.append("text")
-                .attr("class", "legend-text")
-                .attr("x", legendBrickWidth/2)
-                .attr("y", legendBrickHeight + 20)
-                .attr("text-anchor", "middle")
-                .text(d => `${d[0]}-${d[1]}`);
+            .attr("class", "legend-text")
+            .attr("x", legendBrickWidth/2)
+            .attr("y", legendBrickHeight + 20)
+            .attr("text-anchor", "middle")
+            .style("font-weight", "bold")
+            .text(d => `${d[0]}-${d[1]}`);
 
             svg.selectAll("rect")
-                .on("mouseover", function(event, d) {
-                    d3.select(this)
-                        .transition()
-                        .duration(200)
-                        .style("opacity", 0.7);
+            .on("mouseover", function(event, d) {
+            d3.select(this)
+            .transition()
+            .duration(200)
+            .style("opacity", 0.7);
 
-                    tooltip.transition()
-                        .duration(200)
-                        .style("opacity", .9);
-                        
-                    tooltip.html(`Breed Group: ${d["Breed Group"]}<br/>Garden Size: ${d["Garden Size"]}<br/>Count: ${d.Count}`)
-                        .style("left", (event.pageX + 10) + "px")
-                        .style("top", (event.pageY - 28) + "px");
-                })
-                .on("mouseout", function() {
-                    d3.select(this)
-                        .transition()
-                        .duration(500)
-                        .style("opacity", 1);
+            tooltip.transition()
+            .duration(200)
+            .style("opacity", .9);
+            
+            tooltip.html(`Breed Group: ${d["Breed Group"]}<br/>Garden Size: ${d["Garden Size"]}<br/>Count: ${d.Count}`)
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 28) + "px");
+            })
+            .on("mouseout", function() {
+            d3.select(this)
+            .transition()
+            .duration(500)
+            .style("opacity", 1);
 
-                    tooltip.transition()
-                        .duration(500)
-                        .style("opacity", 0);
-                });
+            tooltip.transition()
+            .duration(500)
+            .style("opacity", 0);
+            });
         });
     </script>
     <footer>
