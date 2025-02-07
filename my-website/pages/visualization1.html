@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Competition Analysis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
+        /* Previous styles remain the same */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -17,19 +18,23 @@
         .container {
             max-width: 1000px;
             margin: 0 auto;
+            margin-top: 2px;
             background: white;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .search-wrapper {
             margin: 20px 0;
             text-align: center;
+            position: relative;
+            width: 300px;
+            margin: 20px auto;
         }
 
         #searchInput {
-            width: 300px;
+            width: 100%;
             padding: 10px 15px;
             border: 2px solid #ddd;
             border-radius: 20px;
@@ -40,6 +45,41 @@
 
         #searchInput:focus {
             border-color: #2196F3;
+        }
+
+        .autocomplete-items {
+            position: absolute;
+            border: 1px solid #ddd;
+            border-radius: 0 0 8px 8px;
+            z-index: 99;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .autocomplete-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-align: left;
+        }
+
+        .autocomplete-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .autocomplete-item.active {
+            background-color: #e9ecef;
+        }
+
+        .highlight-text {
+            background-color: #fff3cd;
+            padding: 0 2px;
         }
 
         .bar {
@@ -54,7 +94,7 @@
         .tooltip {
             position: absolute;
             padding: 10px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0,0,0,0.8);
             color: white;
             border-radius: 4px;
             pointer-events: none;
@@ -82,57 +122,190 @@
             color: white;
             text-align: center;
             padding: 1.5rem 0;
-            margin-top: rem;
+            margin-top: 18rem;
         }
-    </style>
-    <link rel="stylesheet" href="css/styles.css">
-</head>
 
+        .no-data-message {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .breed-title {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+        }
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+        
+        .search-input-container {
+            width: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        #searchInput {
+            width: 100%;
+            padding: 12px 40px 12px 45px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        #searchInput:focus {
+            border-color: #1e3c72;
+            box-shadow: 0 3px 8px rgba(30,60,114,0.2);
+            outline: none;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            color: #666;
+            z-index: 1;
+        }
+        
+        .clear-button {
+            position: absolute;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            display: none;
+            z-index: 1;
+        }
+        
+        .autocomplete-items {
+            position: absolute;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 5px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .autocomplete-item:hover {
+            background: #f0f4f8;
+        }
+        
+        .autocomplete-item.selected {
+            background: #e3e8f0;
+        }
+        
+        .loading {
+            position: absolute;
+            right: 45px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #1e3c72;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        
+        
+    </style>
+</head>
 <body>
     <a href="../index.html" class="back-button">Back to Home</a>
     <div class="container">
         <h1>Dog Breed Competition Analysis</h1>
         <div class="search-wrapper">
-            <input type="text" id="searchInput" placeholder="Search for a breed...">
+            <div class="search-input-container">
+                <i class="fas fa-search search-icon"></i>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Search for a breed..."
+                    autocomplete="off"
+                >
+                <button class="clear-button" id="clearSearch">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="autocomplete-items" id="autocompleteList"></div>
         </div>
-        <div id="chartContainer"></div>
+        <div id="breedTitle" class="breed-title"></div>
+        <div id="noDataMessage" class="no-data-message" style="display: none;">
+            Please enter a valid breed name to view the analysis
+        </div>
+        <div id="chartContainer" style="display: none;"></div>
     </div>
-    <script>
-        // Load and process data
-        d3.csv("data1.csv").then(data => {
-            const margin = { top: 40, right: 20, bottom: 180, left: 120 };
-            const width = 960 - margin.left - margin.right;
-            const height = 500 - margin.top - margin.bottom;
 
-            // Create SVG container
+    <script>
+        let allBreeds = [];
+        const DEFAULT_BREED = "Brittany";
+        
+        d3.csv("data1.csv").then(data => {
+            allBreeds = [...new Set(data.map(d => d.Breed))].sort();
+            
+            const margin = {top: 40, right: 20, bottom: 200, left: 80};
+            const width = 1000 - margin.left - margin.right;
+            const height = 700 - margin.top - margin.bottom;
+
             const svg = d3.select("#chartContainer")
                 .append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
                 .append("g")
                 .attr("transform", `translate(${margin.left},${margin.top})`);
-
-            // Create tooltip
+                
             const tooltip = d3.select("body").append("div")
                 .attr("class", "tooltip")
                 .style("opacity", 0);
 
+                const xAxis = svg.append("g")
+                .attr("class", "x-axis")
+                .attr("transform", `translate(0,${height})`)
+                .style("font-size", "12px");
+
             function updateChart(searchTerm) {
-                // Filter data based on search
-                let filteredData;
+                const chartContainer = document.getElementById('chartContainer');
+                const noDataMessage = document.getElementById('noDataMessage');
+                const breedTitle = document.getElementById('breedTitle');
 
-                if (!searchTerm.trim()) {
-                    // Default to "Kennel Club Obedience Championships" when search is empty
-                    filteredData = data.filter(d => d.Breed === "Retriever (Golden)");
-                } else {
-                    // Filter data based on search
-                    filteredData = data.filter(d =>
-                        d.Breed.toLowerCase().startsWith(searchTerm.toLowerCase())
-                    );
+                // Only show data for exact breed matches
+                const exactMatch = allBreeds.find(breed => 
+                    breed.toLowerCase() === searchTerm.toLowerCase()
+                );
+                
+
+                if (!exactMatch) {
+                    chartContainer.style.display = 'none';
+                    noDataMessage.style.display = 'block';
+                    breedTitle.textContent = '';
+                    return;
                 }
-                console.log(filteredData)
 
-                // Create scales
+                const filteredData = data.filter(d => 
+                    d.Breed.toLowerCase() === searchTerm.toLowerCase()
+                );
+
+                if (filteredData.length === 0) {
+                    chartContainer.style.display = 'none';
+                    noDataMessage.style.display = 'block';
+                    breedTitle.textContent = '';
+                    return;
+                }
+
+                chartContainer.style.display = 'block';
+                noDataMessage.style.display = 'none';
+
                 const x = d3.scaleBand()
                     .range([0, width])
                     .padding(0.1);
@@ -140,11 +313,9 @@
                 const y = d3.scaleLinear()
                     .range([height, 0]);
 
-                // Update domains
                 x.domain(filteredData.map(d => d["Class Name"]));
                 y.domain([0, d3.max(filteredData, d => Number(d.Entries))]);
 
-                // Clear previous chart
                 svg.selectAll("*").remove();
 
                 // Add X axis
@@ -153,30 +324,57 @@
                     .call(d3.axisBottom(x))
                     .selectAll("text")
                     .attr("transform", "rotate(-45)")
-                    .style("text-anchor", "end");
+                    .style("text-anchor", "end")
+                    .attr("dx", "-0.8em")
+                    .attr("dy", "0.15em")
+                    .style("font-size", "12px");
 
-                // **Add X-axis Label**
+                // Add X axis label
                 svg.append("text")
+                    .attr("class", "x-axis-label")
+                    .attr("text-anchor", "middle")
                     .attr("x", width / 2)
-                    .attr("y", height + 170)
-                    .style("text-anchor", "middle")
+                    .attr("y", height + margin.bottom - 10)
                     .style("font-size", "14px")
-                    .text("Class Names");
+                    .style("font-weight", "bold")
+                    .text("Competition Classes");
 
                 // Add Y axis
                 svg.append("g")
                     .call(d3.axisLeft(y));
 
-                // **Add Y-axis Label**
+                // Add Y axis label
                 svg.append("text")
+                    .attr("class", "y-axis-label")
+                    .attr("text-anchor", "middle")
                     .attr("transform", "rotate(-90)")
-                    .attr("x", -height / 2)
-                    .attr("y", -50)
-                    .style("text-anchor", "middle")
+                    .attr("y", -margin.left + 20)
+                    .attr("x", -(height / 2))
                     .style("font-size", "14px")
-                    .text("No. of Entries");
+                    .style("font-weight", "bold")
+                    .text("Number of Participants");
 
-                // Add bars with animation
+                // Add chart title
+                svg.append("text")
+                    .attr("class", "chart-title")
+                    .attr("text-anchor", "middle")
+                    .attr("x", width / 2)
+                    .attr("y", -margin.top / 2)
+                    .style("font-size", "16px")
+                    .style("font-weight", "bold")
+                    .text("Class Participation Distribution");
+
+                // Add grid lines for Y axis (optional but helps readability)
+                svg.append("g")
+                    .attr("class", "grid")
+                    .call(d3.axisLeft(y)
+                        .tickSize(-width)
+                        .tickFormat("")
+                    )
+                    .style("stroke-dasharray", "3,3")
+                    .style("opacity", 0.1);
+
+                // Add bars with updated styling
                 svg.selectAll(".bar")
                     .data(filteredData)
                     .enter()
@@ -184,25 +382,21 @@
                     .attr("class", "bar")
                     .attr("x", d => x(d["Class Name"]))
                     .attr("width", x.bandwidth())
-                    .attr("y", height)
-                    .attr("height", 0)
-                    .transition()
-                    .duration(750)
                     .attr("y", d => y(Number(d.Entries)))
                     .attr("height", d => height - y(Number(d.Entries)));
 
-                // Add hover effects
+                // Keep existing tooltip functionality
                 svg.selectAll(".bar")
-                    .on("mouseover", function (event, d) {
+                    .on("mouseover", function(event, d) {
                         d3.select(this).classed("highlight", true);
                         tooltip.transition()
                             .duration(200)
                             .style("opacity", .9);
-                        tooltip.html(`Class: ${d["Class Name"]}<br/>Entries: ${d.Entries}`)
+                        tooltip.html(`<strong>Class:</strong> ${d["Class Name"]}<br/><strong>Entries:</strong> ${d.Entries}`)
                             .style("left", (event.pageX + 10) + "px")
                             .style("top", (event.pageY - 28) + "px");
                     })
-                    .on("mouseout", function () {
+                    .on("mouseout", function() {
                         d3.select(this).classed("highlight", false);
                         tooltip.transition()
                             .duration(500)
@@ -210,66 +404,162 @@
                     });
             }
 
+            const searchInput = document.getElementById('searchInput');
+            const autocompleteList = document.getElementById('autocompleteList');
+            let currentFocus = -1;
 
+            function showAutocomplete(inputValue) {
+            const searchTerm = inputValue.toLowerCase();
+            const matchingBreeds = allBreeds.filter(breed => 
+                breed.toLowerCase().includes(searchTerm)
+            );
 
-            updateChart("");
-
-            const searchInput = d3.select("#searchInput");
-            const dropdown = d3.select("body").append("div")
-                .attr("class", "dropdown")
-                .style("position", "absolute")
-                .style("background", "white")
-                .style("border", "1px solid #ddd")
-                .style("border-radius", "5px")
-                .style("max-height", "150px")
-                .style("overflow-y", "auto")
-                .style("display", "none")
-                .style("z-index", "10");
-
-            searchInput.on("input", function () {
-                const searchTerm = this.value.toLowerCase();
-                const filteredBreeds = data
-                    .map(d => d.Breed)
-                    .filter((breed, index, self) => self.indexOf(breed) === index) // Get unique breeds
-                    .filter(breed => breed.toLowerCase().startsWith(searchTerm)); // Filter by search term
-
-                dropdown.html(""); // Clear previous options
-
-                if (filteredBreeds.length > 0 && searchTerm) {
-                    dropdown.style("display", "block")
-                        .style("left", `${this.getBoundingClientRect().left}px`)
-                        .style("top", `${this.getBoundingClientRect().bottom + window.scrollY}px`)
-                        .style("width", `${this.offsetWidth}px`);
-
-                    filteredBreeds.forEach(breed => {
-                        dropdown.append("div")
-                            .text(breed)
-                            .style("padding", "8px")
-                            .style("cursor", "pointer")
-                            .on("click", function () {
-                                searchInput.property("value", breed);
-                                dropdown.style("display", "none");
-                                updateChart(breed); // Update chart based on selected breed
-                            });
+            autocompleteList.innerHTML = '';
+            
+            if (matchingBreeds.length > 0 && searchTerm) {
+                autocompleteList.style.display = 'block';
+                autocompleteList.classList.add('show');
+                matchingBreeds.forEach(breed => {
+                    const item = document.createElement('div');
+                    item.className = 'autocomplete-item';
+                    
+                    const index = breed.toLowerCase().indexOf(searchTerm);
+                    const highlightedText = breed.substring(0, index) +
+                        `<span class="highlight-text">${breed.substring(index, index + searchTerm.length)}</span>` +
+                        breed.substring(index + searchTerm.length);
+                    
+                    item.innerHTML = highlightedText;
+                    
+                    item.addEventListener('click', function() {
+                        searchInput.value = breed;
+                        autocompleteList.style.display = 'none';
+                        autocompleteList.classList.remove('show');
+                        updateChart(breed);
                     });
-                } else {
-                    dropdown.style("display", "none");
+                    
+                    autocompleteList.appendChild(item);
+                });
+            } else {
+                autocompleteList.style.display = 'none';
+                autocompleteList.classList.remove('show');
+            }
+        }
+
+            searchInput.addEventListener('input', function() {
+                showAutocomplete(this.value);
+                updateChart(this.value);
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !autocompleteList.contains(e.target)) {
+                    autocompleteList.style.display = 'none';
                 }
             });
 
-            // Hide dropdown if clicked outside
-            d3.select("body").on("click", function (event) {
-                if (!searchInput.node().contains(event.target) && !dropdown.node().contains(event.target)) {
-                    dropdown.style("display", "none");
+            searchInput.addEventListener('keydown', function(e) {
+                const items = autocompleteList.getElementsByClassName('autocomplete-item');
+                
+                if (e.key === 'ArrowDown') {
+                    currentFocus++;
+                    addActive(items);
+                } else if (e.key === 'ArrowUp') {
+                    currentFocus--;
+                    addActive(items);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (currentFocus > -1) {
+                        if (items) items[currentFocus].click();
+                    }
                 }
             });
 
+            function addActive(items) {
+                if (!items) return false;
+                removeActive(items);
+                if (currentFocus >= items.length) currentFocus = 0;
+                if (currentFocus < 0) currentFocus = items.length - 1;
+                items[currentFocus].classList.add('active');
+            }
+
+            function removeActive(items) {
+                for (let i = 0; i < items.length; i++) {
+                    items[i].classList.remove('active');
+                }
+            }
+
+            // Set default breed and trigger initial chart
+            searchInput.value = DEFAULT_BREED;
+            updateChart(DEFAULT_BREED);
         });
+
+        // Add to your existing JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const clearButton = document.getElementById('clearSearch');
+            const loading = document.getElementById('searchLoading');
+            
+            // Show/hide clear button
+            searchInput.addEventListener('input', function() {
+                clearButton.style.display = this.value ? 'block' : 'none';
+                debounceSearch(this.value);
+            });
+            
+            // Clear search
+            clearButton.addEventListener('click', function() {
+                searchInput.value = '';
+                clearButton.style.display = 'none';
+                autocompleteList.innerHTML = '';
+            });
+            
+            // Debounce search function
+            const debounceSearch = debounce(function(value) {
+                if (value.length < 2) {
+                    autocompleteList.innerHTML = '';
+                    return;
+                }
+                
+                loading.style.display = 'block';
+                showAutocomplete(value);
+                loading.style.display = 'none';
+            }, 300);
+            
+            // Handle keyboard navigation
+            searchInput.addEventListener('keydown', function(e) {
+                const items = autocompleteList.getElementsByClassName('autocomplete-item');
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    navigateList(e.key === 'ArrowDown' ? 1 : -1, items);
+                } else if (e.key === 'Enter') {
+                    const selected = document.querySelector('.autocomplete-item.selected');
+                    if (selected) selected.click();
+                }
+            });
+        });
+
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        function navigateList(direction, items) {
+            const current = document.querySelector('.autocomplete-item.selected');
+            let index = -1;
+            
+            if (current) {
+                current.classList.remove('selected');
+                index = Array.from(items).indexOf(current);
+            }
+            
+            index = (index + direction + items.length) % items.length;
+            items[index].classList.add('selected');
+            items[index].scrollIntoView({ block: 'nearest' });
+        }
     </script>
-    <br><br><br><br><br><br><br><br><br><br><br><br><br>
     <footer>
         <p>&copy; 2024 Crufts Data Visualizations. All rights reserved.</p>
     </footer>
 </body>
-
 </html>
